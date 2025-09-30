@@ -1,6 +1,9 @@
+using System.Text.Json.Serialization;
+
 namespace ZeeKer.Crafty.Dtos;
 
 public sealed record ServerDto
 {
-    public int PlayersOnline { get; init; }
+    [JsonPropertyName("server_id")]
+    public int ServerId { get; init; }
 }

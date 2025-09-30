@@ -1,3 +1,4 @@
+using System.Linq;
 using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Http;
@@ -23,8 +24,14 @@ public class CraftyStatusController : ControllerBase
     {
         try
         {
-            var totalOnline = await _craftyControllerClient.GetTotalOnlineAsync(cancellationToken);
-            return Ok(new { totalOnline });
+            var serverStatistics = await _craftyControllerClient.GetServerStatisticsAsync(cancellationToken);
+            var totalOnline = serverStatistics.Sum(static stats => stats.Online);
+
+            return Ok(new
+            {
+                totalOnline,
+                servers = serverStatistics
+            });
         }
         catch (HttpRequestException ex)
         {
