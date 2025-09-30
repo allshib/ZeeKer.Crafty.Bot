@@ -53,6 +53,8 @@ builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>(
 
 var app = builder.Build();
 
+app.Services.GetRequiredService<ITelegramNotifier>();
+
 app.UseSwagger();
 app.UseSwaggerUI();
 
