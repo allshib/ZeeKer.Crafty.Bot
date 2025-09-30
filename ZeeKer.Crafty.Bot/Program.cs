@@ -3,6 +3,7 @@ using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using System.Net.Http.Headers;
 using ZeeKer.Crafty.Bot.Messaging;
+using ZeeKer.Crafty.Bot.Services;
 using ZeeKer.Crafty.Configuration;
 using ZeeKer.Crafty.Infrastructure.Clients;
 
@@ -29,6 +30,8 @@ builder.Services.AddSingleton<ITelegramBotClient>(sp =>
 });
 
 builder.Services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
+builder.Services.AddSingleton<ServerStatisticsMessageBuilder>();
+builder.Services.AddHostedService<CraftyStatusBroadcastService>();
 
 builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
 {
