@@ -4,10 +4,17 @@
     <TargetFramework>net9.0</TargetFramework>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
+    <UserSecretsId>a215dac2-c175-49b7-9759-490a9c1e2fc0</UserSecretsId>
   </PropertyGroup>
 
   <ItemGroup>
     <Folder Include="Controllers\" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Swashbuckle.AspNetCore.Swagger" Version="9.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.5" />
+    <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.5" />
   </ItemGroup>
 
   <ItemGroup>

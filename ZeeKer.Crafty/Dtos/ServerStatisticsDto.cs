@@ -1,5 +1,6 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
+using ZeeKer.Crafty.Converters;
 
 namespace ZeeKer.Crafty.Dtos;
 
@@ -24,6 +25,7 @@ public sealed record ServerStatisticsDto
     public double? Cpu { get; init; }
 
     [JsonPropertyName("mem")]
+    [JsonConverter(typeof(NumberToStringConverter))]
     public string? Memory { get; init; }
 
     [JsonPropertyName("mem_percent")]

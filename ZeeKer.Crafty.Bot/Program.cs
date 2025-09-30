@@ -1,5 +1,6 @@
-using System.Net.Http.Headers;
+using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
+using System.Net.Http.Headers;
 using ZeeKer.Crafty.Configuration;
 using ZeeKer.Crafty.Infrastructure.Clients;
 
@@ -8,7 +9,12 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllers();
 
-builder.Services.Configure<CraftyControllerOptions>(builder.Configuration.GetSection("CraftyController"));
+// Swagger
+builder.Services.AddEndpointsApiExplorer();
+builder.Services.AddSwaggerGen();
+
+builder.Services.Configure<CraftyControllerOptions>(
+    builder.Configuration.GetSection("CraftyController"));
 
 builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
 {
@@ -26,11 +32,16 @@ builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>(
 
     if (!string.IsNullOrWhiteSpace(options.ApiKey))
     {
-        client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", options.ApiKey);
+        client.DefaultRequestHeaders.Authorization =
+            new AuthenticationHeaderValue("Bearer", options.ApiKey);
     }
 });
 
 var app = builder.Build();
+
+app.UseSwagger();
+app.UseSwaggerUI();
+
 
 // Configure the HTTP request pipeline.
 app.UseAuthorization();
