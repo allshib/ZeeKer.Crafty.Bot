@@ -31,9 +31,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
                 if (update.Message is { } message)
                 {
                     var chatId = message.Chat.Id;
-                    //Console.WriteLine($"ChatId: {chatId}");
-
-                    //await bot.SendTextMessageAsync(chatId, "Привет! Это твой ChatId.", cancellationToken: ct);
+                    chatIds.Add(chatId);
                 }
             },
             (bot, exception, ct) =>

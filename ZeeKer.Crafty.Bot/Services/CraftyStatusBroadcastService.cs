@@ -43,11 +43,11 @@ public sealed class CraftyStatusBroadcastService : BackgroundService
 
         while (!stoppingToken.IsCancellationRequested)
         {
-            await BroadcastStatusAsync(stoppingToken).ConfigureAwait(false);
+            await BroadcastStatusAsync(stoppingToken);
 
             try
             {
-                await timer.WaitForNextTickAsync(stoppingToken).ConfigureAwait(false);
+                await timer.WaitForNextTickAsync(stoppingToken);
             }
             catch (OperationCanceledException) when (stoppingToken.IsCancellationRequested)
             {
@@ -61,13 +61,11 @@ public sealed class CraftyStatusBroadcastService : BackgroundService
         try
         {
             var statistics = await _craftyControllerClient
-                .GetServerStatisticsAsync(cancellationToken)
-                .ConfigureAwait(false);
+                .GetServerStatisticsAsync(cancellationToken);
 
             var message = _messageBuilder.Build(statistics);
 
-            await _telegramNotifier.SendMessageAsync(message, cancellationToken)
-                .ConfigureAwait(false);
+            await _telegramNotifier.SendMessageAsync(message, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
