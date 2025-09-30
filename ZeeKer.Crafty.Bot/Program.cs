@@ -15,6 +15,10 @@ builder.Services.AddSwaggerGen();
 
 builder.Services.Configure<CraftyControllerOptions>(
     builder.Configuration.GetSection("CraftyController"));
+builder.Services.Configure<TelegramBotOptions>(
+    builder.Configuration.GetSection("TelegramBot"));
+builder.Services.AddOptions<TelegramBotOptions>()
+    .ValidateDataAnnotations();
 
 builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
 {
