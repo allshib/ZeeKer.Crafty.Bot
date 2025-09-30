@@ -1,16 +1,8 @@
-using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
-using System.Threading;
 using Telegram.Bot;
-using Telegram.Bot.Types;
 using ZeeKer.Crafty.Configuration;
 
 namespace ZeeKer.Crafty.Bot.Messaging;
-
-public interface ITelegramNotifier
-{
-    Task SendMessageAsync(string message, CancellationToken cancellationToken = default);
-}
 
 public sealed class TelegramNotifier : ITelegramNotifier
 {

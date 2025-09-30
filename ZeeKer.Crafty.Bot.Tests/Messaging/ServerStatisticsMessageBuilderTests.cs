@@ -1,4 +1,3 @@
-using System;
 using System.Text.Json;
 using Xunit;
 using ZeeKer.Crafty.Bot.Messaging;

@@ -1,7 +1,4 @@
-using System.Linq;
-using System.Net.Http;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.Http;
 using ZeeKer.Crafty.Infrastructure.Clients;
 
 namespace ZeeKer.Crafty.Bot.Controllers;
