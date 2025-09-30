@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
@@ -32,54 +32,39 @@ public sealed class ServerStatisticsMessageBuilder
 
         if (stats.Count == 0)
         {
-            return "No server statistics available.";
+            return "ℹ️ Нет доступной статистики по серверам.";
         }
 
         var totalPlayers = stats.Sum(static stat => stat.Online);
+        var moscowZone = TimeZoneInfo.FindSystemTimeZoneById(OperatingSystem.IsWindows() ? "Russian Standard Time" : "Europe/Moscow");
+        var moscowTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, moscowZone);
 
         var builder = new StringBuilder();
-        builder.AppendLine("Crafty Server Summary");
-        builder.AppendLine($"Total servers: {stats.Count}");
-        builder.AppendLine($"Total players online: {totalPlayers}");
-        builder.AppendLine();
+        builder.AppendLine("🌐 *Crafty Server Summary*");
+        builder.AppendLine($"🌐 Статистика создана {moscowTime:dd.MM.yyyy HH:mm:ss}");
+        builder.AppendLine($"🖥️ Всего серверов: *{stats.Count}*");
+        builder.AppendLine($"👥 Игроков онлайн: *{totalPlayers}*");
+        builder.AppendLine("────────────────────");
 
         foreach (var stat in stats.OrderBy(GetServerName, StringComparer.OrdinalIgnoreCase))
         {
             var serverName = GetServerName(stat);
-            builder.Append("- ")
-                .Append(serverName)
-                .Append(" (")
-                .Append(stat.Running ? "Running" : "Stopped")
-                .AppendLine(")");
+            var statusEmoji = stat.Running ? "✅" : "❌";
 
-            builder.Append("  Players: ")
-                .Append(stat.Online)
-                .Append('/')
-                .AppendLine(stat.MaxPlayers?.ToString(CultureInfo.InvariantCulture) ?? "?");
-
-            builder.Append("  World: ")
-                .AppendLine(FormatWorld(stat));
-
-            builder.Append("  CPU: ")
-                .AppendLine(FormatPercentage(stat.Cpu));
-
-            builder.Append("  Memory: ")
-                .AppendLine(FormatMemory(stat));
-
-            builder.Append("  Version: ")
-                .AppendLine(!string.IsNullOrWhiteSpace(stat.Version) ? stat.Version : "n/a");
-
-            builder.Append("  Started: ")
-                .AppendLine(!string.IsNullOrWhiteSpace(stat.Started) ? stat.Started : "n/a");
-
-            builder.Append("  Flags: ")
-                .AppendLine(FormatFlags(stat));
-
-            builder.AppendLine();
+            builder.AppendLine($"*{serverName}* {statusEmoji}");
+            builder.AppendLine($"👥 Игроки: {stat.Online}/{stat.MaxPlayers?.ToString(CultureInfo.InvariantCulture) ?? "?"}");
+            builder.AppendLine($"🌍 Мир: {FormatWorld(stat)}");
+            builder.AppendLine($"🖥️ CPU: {FormatPercentage(stat.Cpu)}");
+            builder.AppendLine($"💾 Память: {FormatMemory(stat)}");
+            builder.AppendLine($"📦 Версия: {(!string.IsNullOrWhiteSpace(stat.Version) ? stat.Version : "n/a")}");
+            builder.AppendLine($"⏱️ Старт: {(!string.IsNullOrWhiteSpace(stat.Started) ? stat.Started : "n/a")}");
+            builder.AppendLine($"⚑ Флаги: {FormatFlags(stat)}");
+            builder.AppendLine("────────────────────");
         }
 
         return builder.ToString().TrimEnd();
     }
+
 
     private static string GetServerName(ServerStatisticsDto statistics)
     {
