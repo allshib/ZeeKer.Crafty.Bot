@@ -9,6 +9,8 @@ Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeKer.Crafty", "ZeeKer.Cra
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeKer.Crafty.Infrastructure", "ZeeKer.Crafty.Infrastructure\ZeeKer.Crafty.Infrastructure.csproj", "{72F600AF-7D8E-4B27-A461-93EFEF2FB85D}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ZeeKer.Crafty.Bot.Tests", "ZeeKer.Crafty.Bot.Tests\ZeeKer.Crafty.Bot.Tests.csproj", "{8FC12882-0E52-43F6-84C2-EF160BD8BB11}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{72F600AF-7D8E-4B27-A461-93EFEF2FB85D}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{72F600AF-7D8E-4B27-A461-93EFEF2FB85D}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{72F600AF-7D8E-4B27-A461-93EFEF2FB85D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8FC12882-0E52-43F6-84C2-EF160BD8BB11}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8FC12882-0E52-43F6-84C2-EF160BD8BB11}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8FC12882-0E52-43F6-84C2-EF160BD8BB11}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8FC12882-0E52-43F6-84C2-EF160BD8BB11}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
