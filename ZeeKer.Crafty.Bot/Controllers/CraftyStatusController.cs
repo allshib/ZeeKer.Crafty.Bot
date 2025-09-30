@@ -16,19 +16,14 @@ public class CraftyStatusController : ControllerBase
         _logger = logger;
     }
 
-    [HttpGet("online")]
-    public async Task<IActionResult> GetOnlineAsync(CancellationToken cancellationToken)
+    [HttpGet("statistics")]
+    public async Task<IActionResult> GetStatisticAsync(CancellationToken cancellationToken)
     {
         try
         {
             var serverStatistics = await _craftyControllerClient.GetServerStatisticsAsync(cancellationToken);
-            var totalOnline = serverStatistics.Sum(static stats => stats.Online);
 
-            return Ok(new
-            {
-                totalOnline,
-                servers = serverStatistics
-            });
+            return Ok(serverStatistics);
         }
         catch (HttpRequestException ex)
         {
