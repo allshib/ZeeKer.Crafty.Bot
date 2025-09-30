@@ -1,6 +1,8 @@
 using Microsoft.AspNetCore.Builder;
 using Microsoft.Extensions.Options;
+using Telegram.Bot;
 using System.Net.Http.Headers;
+using ZeeKer.Crafty.Bot.Messaging;
 using ZeeKer.Crafty.Configuration;
 using ZeeKer.Crafty.Infrastructure.Clients;
 
@@ -19,6 +21,14 @@ builder.Services.Configure<TelegramBotOptions>(
     builder.Configuration.GetSection("TelegramBot"));
 builder.Services.AddOptions<TelegramBotOptions>()
     .ValidateDataAnnotations();
+
+builder.Services.AddSingleton<ITelegramBotClient>(sp =>
+{
+    var options = sp.GetRequiredService<IOptions<TelegramBotOptions>>().Value;
+    return new TelegramBotClient(options.Token);
+});
+
+builder.Services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
 
 builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
 {
