@@ -1,3 +1,4 @@
+using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using System.Net.Http.Headers;
@@ -5,6 +6,8 @@ using ZeeKer.Crafty.Bot.Messaging;
 using ZeeKer.Crafty.Bot.Services;
 using ZeeKer.Crafty.Configuration;
 using ZeeKer.Crafty.Infrastructure.Clients;
+using ZeeKer.Crafty.Infrastructure.Persistence;
+using ZeeKer.Crafty.Messaging;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -31,6 +34,15 @@ builder.Services.AddSingleton<ITelegramBotClient>(sp =>
 builder.Services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
 builder.Services.AddSingleton<ServerStatisticsMessageBuilder>();
 builder.Services.AddHostedService<CraftyStatusBroadcastService>();
+
+builder.Services.AddDbContextFactory<TelegramBotDbContext>(options =>
+{
+    var connectionString = builder.Configuration.GetConnectionString("TelegramBot")
+        ?? "Data Source=telegram-bot.db";
+
+    options.UseSqlite(connectionString);
+});
+builder.Services.AddScoped<ITelegramChatStateRepository, SqliteTelegramChatStateRepository>();
 
 builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
 {

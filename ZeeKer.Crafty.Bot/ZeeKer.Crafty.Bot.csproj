@@ -16,6 +16,9 @@
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerGen" Version="9.0.5" />
     <PackageReference Include="Swashbuckle.AspNetCore.SwaggerUI" Version="9.0.5" />
     <PackageReference Include="Telegram.Bot" Version="19.0.0" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Design" Version="8.0.8">
+      <PrivateAssets>all</PrivateAssets>
+    </PackageReference>
   </ItemGroup>
 
   <ItemGroup>
