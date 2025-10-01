@@ -1,3 +1,4 @@
+using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
@@ -38,9 +39,16 @@ builder.Services.AddHostedService<CraftyStatusBroadcastService>();
 builder.Services.AddDbContextFactory<TelegramBotDbContext>(options =>
 {
     var connectionString = builder.Configuration.GetConnectionString("TelegramBot")
-        ?? "Data Source=telegram-bot.db";
+        ?? throw new InvalidOperationException("Connection string 'TelegramBot' is not configured.");
 
-    options.UseSqlite(connectionString);
+    var sqliteBuilder = new SqliteConnectionStringBuilder(connectionString);
+
+    if (!Path.IsPathRooted(sqliteBuilder.DataSource))
+    {
+        sqliteBuilder.DataSource = Path.Combine(builder.Environment.ContentRootPath, sqliteBuilder.DataSource);
+    }
+
+    options.UseSqlite(sqliteBuilder.ConnectionString);
 });
 builder.Services.AddScoped<ITelegramChatStateRepository, SqliteTelegramChatStateRepository>();
 
@@ -66,6 +74,13 @@ builder.Services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>(
 });
 
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TelegramBotDbContext>>();
+    using var dbContext = factory.CreateDbContext();
+    dbContext.Database.Migrate();
+}
 
 app.Services.GetRequiredService<ITelegramNotifier>();
 
