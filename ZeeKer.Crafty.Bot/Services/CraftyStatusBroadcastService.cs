@@ -1,8 +1,8 @@
 using Microsoft.Extensions.Options;
 using Telegram.Bot.Exceptions;
+using ZeeKer.Crafty.Abstractions.Services;
 using ZeeKer.Crafty.Bot.Messaging;
 using ZeeKer.Crafty.Configuration;
-using ZeeKer.Crafty.Infrastructure.Clients;
 
 namespace ZeeKer.Crafty.Bot.Services;
 

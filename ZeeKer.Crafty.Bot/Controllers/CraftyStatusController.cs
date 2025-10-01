@@ -1,5 +1,5 @@
 using Microsoft.AspNetCore.Mvc;
-using ZeeKer.Crafty.Infrastructure.Clients;
+using ZeeKer.Crafty.Abstractions.Services;
 
 namespace ZeeKer.Crafty.Bot.Controllers;
 

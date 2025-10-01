@@ -1,7 +1,7 @@
 using System.Text.Json;
 using Xunit;
+using ZeeKer.Crafty.Abstractions.Models;
 using ZeeKer.Crafty.Bot.Messaging;
-using ZeeKer.Crafty.Dtos;
 
 namespace ZeeKer.Crafty.Bot.Tests.Messaging;
 

@@ -1,8 +1,8 @@
 using System.Text.Json;
 using System.Text.Json.Serialization;
-using ZeeKer.Crafty.Converters;
+using ZeeKer.Crafty.Abstractions.Converters;
 
-namespace ZeeKer.Crafty.Dtos;
+namespace ZeeKer.Crafty.Abstractions.Models;
 
 public sealed record ServerStatisticsDto
 {

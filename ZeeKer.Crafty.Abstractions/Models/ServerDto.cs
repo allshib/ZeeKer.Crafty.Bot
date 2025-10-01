@@ -1,6 +1,6 @@
 using System.Text.Json.Serialization;
 
-namespace ZeeKer.Crafty.Dtos;
+namespace ZeeKer.Crafty.Abstractions.Models;
 
 public sealed record ServerDto
 {

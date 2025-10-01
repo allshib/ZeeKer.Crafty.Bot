@@ -1,25 +1,27 @@
+
 using Microsoft.Extensions.Options;
 using System.Net.Http.Json;
-using ZeeKer.Crafty.Configuration;
-using ZeeKer.Crafty.Dtos;
+using ZeeKer.Crafty.Abstractions.Configuration;
+using ZeeKer.Crafty.Abstractions.Models;
+using ZeeKer.Crafty.Abstractions.Services;
 
-namespace ZeeKer.Crafty.Infrastructure.Clients;
+namespace ZeeKer.Crafty.Client;
 
 public sealed class CraftyControllerClient : ICraftyControllerClient
 {
-    private readonly HttpClient _httpClient;
-    private readonly IOptionsMonitor<CraftyControllerOptions> _optionsMonitor;
+    private readonly HttpClient httpClient;
+    private readonly IOptionsMonitor<CraftyControllerOptions> optionsMonitor;
     public CraftyControllerClient(HttpClient httpClient, IOptionsMonitor<CraftyControllerOptions> optionsMonitor)
     {
-        _httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
-        _optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
+        this.httpClient = httpClient ?? throw new ArgumentNullException(nameof(httpClient));
+        this.optionsMonitor = optionsMonitor ?? throw new ArgumentNullException(nameof(optionsMonitor));
     }
 
     public async Task<IReadOnlyCollection<ServerStatisticsDto>> GetServerStatisticsAsync(CancellationToken cancellationToken = default)
     {
-        var options = _optionsMonitor.CurrentValue;
+        var options = optionsMonitor.CurrentValue;
 
-        using var response = await _httpClient.GetAsync($"{options.BaseUrl}/api/v2/servers", cancellationToken);
+        using var response = await httpClient.GetAsync($"{options.BaseUrl}/api/v2/servers", cancellationToken);
         await EnsureSuccessStatusCodeAsync(response, cancellationToken);
 
         var serversResponse = await response.Content.ReadFromJsonAsync<CraftyResponse<List<ServerDto>>>(cancellationToken: cancellationToken);
@@ -45,7 +47,7 @@ public sealed class CraftyControllerClient : ICraftyControllerClient
     private async Task<ServerStatisticsDto?> GetServerStatisticsInternalAsync(Guid serverId, CancellationToken cancellationToken)
     {
         var statsEndpoint = $"/api/v2/servers/{serverId}/stats";
-        using var response = await _httpClient.GetAsync(statsEndpoint, cancellationToken);
+        using var response = await httpClient.GetAsync(statsEndpoint, cancellationToken);
         await EnsureSuccessStatusCodeAsync(response, cancellationToken);
 
         var statsResponse = await response.Content.ReadFromJsonAsync<CraftyResponse<ServerStatisticsDto>>(cancellationToken);

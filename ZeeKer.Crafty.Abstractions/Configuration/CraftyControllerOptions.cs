@@ -1,4 +1,4 @@
-namespace ZeeKer.Crafty.Configuration;
+namespace ZeeKer.Crafty.Abstractions.Configuration;
 
 public record class CraftyControllerOptions
 {

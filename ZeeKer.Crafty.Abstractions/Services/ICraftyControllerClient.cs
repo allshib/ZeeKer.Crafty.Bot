@@ -1,6 +1,6 @@
-using ZeeKer.Crafty.Dtos;
+using ZeeKer.Crafty.Abstractions.Models;
 
-namespace ZeeKer.Crafty.Infrastructure.Clients;
+namespace ZeeKer.Crafty.Abstractions.Services;
 
 public interface ICraftyControllerClient
 {

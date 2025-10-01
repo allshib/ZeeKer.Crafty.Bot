@@ -23,6 +23,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\ZeeKer.Crafty.Client\ZeeKer.Crafty.Client.csproj" />
     <ProjectReference Include="..\ZeeKer.Crafty.Infrastructure\ZeeKer.Crafty.Infrastructure.csproj" />
     <ProjectReference Include="..\ZeeKer.Crafty\ZeeKer.Crafty.csproj" />
   </ItemGroup>

@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text;
 using System.Text.Json;
-using ZeeKer.Crafty.Dtos;
+using ZeeKer.Crafty.Abstractions.Models;
 
 namespace ZeeKer.Crafty.Bot.Messaging;
 
