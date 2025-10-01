@@ -1,8 +1,9 @@
 using Microsoft.EntityFrameworkCore;
-using ZeeKer.Crafty.Configuration;
-using ZeeKer.Crafty.Client;
-using ZeeKer.Crafty.Storage;
+using ZeeKer.Crafty.Abstractions.Configuration;
 using ZeeKer.Crafty.Bot.Extensions;
+using ZeeKer.Crafty.Client;
+using ZeeKer.Crafty.Configuration;
+using ZeeKer.Crafty.Storage;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -11,11 +12,13 @@ builder.Services.Configure<TelegramBotOptions>(
 builder.Services.AddOptions<TelegramBotOptions>()
     .ValidateDataAnnotations();
 
+var options = builder.Configuration.GetSection("CraftyController").Get<CraftyControllerOptions>();
+ArgumentNullException.ThrowIfNull(options);
 
 builder.Services
     .AddStorage(builder.Configuration, builder.Environment.ContentRootPath)
     .AddBotServices()
-    .AddCraftyClient(builder.Configuration);
+    .AddCraftyClient(options);
 
 builder.Services.AddControllers();
 builder.Services.AddEndpointsApiExplorer();

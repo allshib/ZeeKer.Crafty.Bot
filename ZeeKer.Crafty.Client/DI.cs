@@ -9,14 +9,11 @@ namespace ZeeKer.Crafty.Client;
 
 public static class DI
 {
-    public static IServiceCollection AddCraftyClient(this IServiceCollection services, IConfiguration configuration)
+    public static IServiceCollection AddCraftyClient(this IServiceCollection services, CraftyControllerOptions options)
     {
-        services.Configure<CraftyControllerOptions>(configuration.GetSection("CraftyController"));
 
         services.AddHttpClient<ICraftyControllerClient, CraftyControllerClient>((sp, client) =>
         {
-            var options = sp.GetRequiredService<IOptions<CraftyControllerOptions>>().Value;
-
             if (!string.IsNullOrWhiteSpace(options.BaseUrl))
             {
                 if (!Uri.TryCreate(options.BaseUrl, UriKind.Absolute, out var baseUri))
