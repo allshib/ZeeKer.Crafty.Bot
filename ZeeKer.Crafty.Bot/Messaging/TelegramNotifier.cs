@@ -1,6 +1,10 @@
+using System.Collections.Concurrent;
+using System.Linq;
+using System.Threading;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using ZeeKer.Crafty.Configuration;
+using ZeeKer.Crafty.Messaging;
 
 namespace ZeeKer.Crafty.Bot.Messaging;
 
@@ -9,18 +13,29 @@ public sealed class TelegramNotifier : ITelegramNotifier
     private readonly ITelegramBotClient client;
     private readonly TelegramBotOptions options;
     private readonly ILogger<TelegramNotifier> logger;
+    private readonly ITelegramChatStateRepository chatStateRepository;
 
     // chatId -> last messageId
-    private readonly Dictionary<long, int> _lastMessages = new();
+    private readonly ConcurrentDictionary<long, int> _lastMessages;
 
     public TelegramNotifier(
         ITelegramBotClient client,
         IOptions<TelegramBotOptions> options,
-        ILogger<TelegramNotifier> logger)
+        ILogger<TelegramNotifier> logger,
+        ITelegramChatStateRepository chatStateRepository)
     {
         this.client = client;
         this.options = options.Value;
         this.logger = logger;
+        this.chatStateRepository = chatStateRepository;
+
+        var existingStates = chatStateRepository
+            .GetAllAsync(CancellationToken.None)
+            .GetAwaiter()
+            .GetResult();
+
+        _lastMessages = new ConcurrentDictionary<long, int>(
+            existingStates.ToDictionary(state => state.ChatId, state => state.LastMessageId));
 
         this.client.StartReceiving(async (bot, update, ct) =>
         {
@@ -30,24 +45,33 @@ public sealed class TelegramNotifier : ITelegramNotifier
                     return;
 
                 var chatId = message.Chat.Id;
-                if (!_lastMessages.ContainsKey(chatId))
-                    _lastMessages[chatId] = 0;
+                if (_lastMessages.TryAdd(chatId, 0))
+                {
+                    await chatStateRepository.UpsertAsync(
+                        new TelegramChatState(chatId, 0),
+                        ct);
+                }
 
                 var sent = await this.client.SendTextMessageAsync(
                         chatId: chatId,
-                        text: "Вывод статистики активирован",
+                        text: "Р’С‹РІРѕРґ СЃС‚Р°С‚РёСЃС‚РёРєРё Р°РєС‚РёРІРёСЂРѕРІР°РЅ",
                         cancellationToken: ct);
+
+                _lastMessages[chatId] = sent.MessageId;
+                await chatStateRepository.UpsertAsync(
+                    new TelegramChatState(chatId, sent.MessageId),
+                    ct);
             }
         },
             (bot, exception, ct) =>
             {
-                logger.LogError(exception, "Ошибка");
+                logger.LogError(exception, "РћС€РёР±РєР°");
             });
     }
 
     public async Task SendMessageAsync(string message, CancellationToken cancellationToken = default)
     {
-        foreach (var kvp in _lastMessages.ToList())
+        foreach (var kvp in _lastMessages.ToArray())
         {
             var chatId = kvp.Key;
             var messageId = kvp.Value;
@@ -56,17 +80,21 @@ public sealed class TelegramNotifier : ITelegramNotifier
             {
                 if (messageId > 0)
                 {
-                    // пробуем редактировать существующее сообщение
+                    // РїСЂРѕР±СѓРµРј СЂРµРґР°РєС‚РёСЂРѕРІР°С‚СЊ СЃСѓС‰РµСЃС‚РІСѓСЋС‰РµРµ СЃРѕРѕР±С‰РµРЅРёРµ
                     await client.EditMessageTextAsync(
                         chatId: chatId,
                         messageId: messageId,
                         text: message,
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                         cancellationToken: cancellationToken);
+
+                    await chatStateRepository.UpsertAsync(
+                        new TelegramChatState(chatId, messageId),
+                        cancellationToken);
                 }
                 else
                 {
-                    // если ещё нет — отправляем новое
+                    // РµСЃР»Рё РµС‰С‘ РЅРµС‚ вЂ” РѕС‚РїСЂР°РІР»СЏРµРј РЅРѕРІРѕРµ
                     var sent = await client.SendTextMessageAsync(
                         chatId: chatId,
                         text: message,
@@ -74,11 +102,15 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         cancellationToken: cancellationToken);
 
                     _lastMessages[chatId] = sent.MessageId;
+
+                    await chatStateRepository.UpsertAsync(
+                        new TelegramChatState(chatId, sent.MessageId),
+                        cancellationToken);
                 }
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400 || ex.ErrorCode == 404)
             {
-                // сообщение удалили или оно невалидно -> отправляем заново
+                // СЃРѕРѕР±С‰РµРЅРёРµ СѓРґР°Р»РёР»Рё РёР»Рё РѕРЅРѕ РЅРµРІР°Р»РёРґРЅРѕ -> РѕС‚РїСЂР°РІР»СЏРµРј Р·Р°РЅРѕРІРѕ
                 var sent = await client.SendTextMessageAsync(
                     chatId: chatId,
                     text: message,
@@ -86,10 +118,14 @@ public sealed class TelegramNotifier : ITelegramNotifier
                     cancellationToken: cancellationToken);
 
                 _lastMessages[chatId] = sent.MessageId;
+
+                await chatStateRepository.UpsertAsync(
+                    new TelegramChatState(chatId, sent.MessageId),
+                    cancellationToken);
             }
             catch (Exception ex)
             {
-                logger.LogError(ex, "Ошибка при отправке/редактировании сообщения");
+                logger.LogError(ex, "РћС€РёР±РєР° РїСЂРё РѕС‚РїСЂР°РІРєРµ/СЂРµРґР°РєС‚РёСЂРѕРІР°РЅРёРё СЃРѕРѕР±С‰РµРЅРёСЏ");
             }
         }
     }
