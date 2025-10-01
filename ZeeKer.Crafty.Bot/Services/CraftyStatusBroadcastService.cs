@@ -54,8 +54,7 @@ public sealed class CraftyStatusBroadcastService : BackgroundService
     {
         try
         {
-            var statistics = await _craftyControllerClient
-                .GetServerStatisticsAsync(cancellationToken);
+            var statistics = await _craftyControllerClient.GetServerStatisticsAsync(cancellationToken);
 
             var message = _messageBuilder.Build(statistics);
 

@@ -61,9 +61,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         cancellationToken: ct);
 
                 _lastMessages[chatId] = sent.MessageId;
-                await chatStateRepository.UpsertAsync(
-                    new TelegramChatState(chatId, sent.MessageId),
-                    ct);
+                await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), ct);
             }
         },
             (bot, exception, ct) =>
@@ -95,9 +93,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                         cancellationToken: cancellationToken);
 
-                    await chatStateRepository.UpsertAsync(
-                        new TelegramChatState(chatId, messageId),
-                        cancellationToken);
+                    await chatStateRepository.UpsertAsync(new(chatId, messageId), cancellationToken);
                 }
                 else
                 {
@@ -110,9 +106,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
                     _lastMessages[chatId] = sent.MessageId;
 
-                    await chatStateRepository.UpsertAsync(
-                        new TelegramChatState(chatId, sent.MessageId),
-                        cancellationToken);
+                    await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), cancellationToken);
                 }
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400 || ex.ErrorCode == 404)
@@ -126,9 +120,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
                 _lastMessages[chatId] = sent.MessageId;
 
-                await chatStateRepository.UpsertAsync(
-                    new TelegramChatState(chatId, sent.MessageId),
-                    cancellationToken);
+                await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), cancellationToken);
             }
             catch (Exception ex)
             {
