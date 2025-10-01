@@ -13,7 +13,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
     private readonly ITelegramBotClient client;
     private readonly TelegramBotOptions options;
     private readonly ILogger<TelegramNotifier> logger;
-    private readonly ITelegramChatStateRepository chatStateRepository;
+    private readonly IServiceScopeFactory serviceScopeFactory;
 
     // chatId -> last messageId
     private readonly ConcurrentDictionary<long, int> _lastMessages;
@@ -22,12 +22,15 @@ public sealed class TelegramNotifier : ITelegramNotifier
         ITelegramBotClient client,
         IOptions<TelegramBotOptions> options,
         ILogger<TelegramNotifier> logger,
-        ITelegramChatStateRepository chatStateRepository)
+        IServiceScopeFactory serviceScopeFactory)
     {
         this.client = client;
         this.options = options.Value;
         this.logger = logger;
-        this.chatStateRepository = chatStateRepository;
+        this.serviceScopeFactory = serviceScopeFactory;
+
+        using var scope = serviceScopeFactory.CreateScope();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
 
         var existingStates = chatStateRepository
             .GetAllAsync(CancellationToken.None)
@@ -71,6 +74,9 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
     public async Task SendMessageAsync(string message, CancellationToken cancellationToken = default)
     {
+        using var scope = serviceScopeFactory.CreateScope();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+
         foreach (var kvp in _lastMessages.ToArray())
         {
             var chatId = kvp.Key;
@@ -78,6 +84,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
             try
             {
+                
                 if (messageId > 0)
                 {
                     // пробуем редактировать существующее сообщение
