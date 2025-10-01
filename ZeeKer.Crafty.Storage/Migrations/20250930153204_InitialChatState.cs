@@ -2,7 +2,7 @@
 
 #nullable disable
 
-namespace ZeeKer.Crafty.Infrastructure.Migrations
+namespace ZeeKer.Crafty.Storage.Migrations
 {
     /// <inheritdoc />
     public partial class InitialChatState : Migration

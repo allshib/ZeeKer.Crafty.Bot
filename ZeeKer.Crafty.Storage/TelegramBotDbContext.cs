@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
-using ZeeKer.Crafty.Infrastructure.Persistence.Entities;
+using ZeeKer.Crafty.Storage.Entities;
 
-namespace ZeeKer.Crafty.Infrastructure.Persistence;
+namespace ZeeKer.Crafty.Storage;
 
 public sealed class TelegramBotDbContext(DbContextOptions<TelegramBotDbContext> options)
     : DbContext(options)

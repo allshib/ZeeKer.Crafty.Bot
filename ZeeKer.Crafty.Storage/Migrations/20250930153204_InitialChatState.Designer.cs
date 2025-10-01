@@ -3,11 +3,10 @@ using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
-using ZeeKer.Crafty.Infrastructure.Persistence;
 
 #nullable disable
 
-namespace ZeeKer.Crafty.Infrastructure.Migrations
+namespace ZeeKer.Crafty.Storage.Migrations
 {
     [DbContext(typeof(TelegramBotDbContext))]
     [Migration("20250930153204_InitialChatState")]

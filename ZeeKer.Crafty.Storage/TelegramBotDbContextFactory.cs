@@ -1,7 +1,7 @@
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Design;
 
-namespace ZeeKer.Crafty.Infrastructure.Persistence;
+namespace ZeeKer.Crafty.Storage;
 
 public sealed class TelegramBotDbContextFactory : IDesignTimeDbContextFactory<TelegramBotDbContext>
 {

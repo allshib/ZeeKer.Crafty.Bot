@@ -1,15 +1,11 @@
-using Microsoft.Data.Sqlite;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
-using System.Net.Http.Headers;
 using ZeeKer.Crafty.Bot.Messaging;
 using ZeeKer.Crafty.Bot.Services;
 using ZeeKer.Crafty.Configuration;
-using ZeeKer.Crafty.Infrastructure.Persistence;
-using ZeeKer.Crafty.Messaging;
 using ZeeKer.Crafty.Client;
-
+using ZeeKer.Crafty.Storage;
 var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
@@ -38,30 +34,12 @@ builder.Services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
 builder.Services.AddSingleton<ServerStatisticsMessageBuilder>();
 builder.Services.AddHostedService<CraftyStatusBroadcastService>();
 
-builder.Services.AddDbContextFactory<TelegramBotDbContext>(options =>
-{
-    var connectionString = builder.Configuration.GetConnectionString("TelegramBot")
-        ?? throw new InvalidOperationException("Connection string 'TelegramBot' is not configured.");
-
-    var sqliteBuilder = new SqliteConnectionStringBuilder(connectionString);
-
-    if (!Path.IsPathRooted(sqliteBuilder.DataSource))
-    {
-        sqliteBuilder.DataSource = Path.Combine(builder.Environment.ContentRootPath, sqliteBuilder.DataSource);
-    }
-
-    options.UseSqlite(sqliteBuilder.ConnectionString);
-});
-builder.Services.AddScoped<ITelegramChatStateRepository, SqliteTelegramChatStateRepository>();
+builder.Services.AddStorage(builder.Configuration, builder.Environment.ContentRootPath);
 
 var app = builder.Build();
 
-using (var scope = app.Services.CreateScope())
-{
-    var factory = scope.ServiceProvider.GetRequiredService<IDbContextFactory<TelegramBotDbContext>>();
-    using var dbContext = factory.CreateDbContext();
-    dbContext.Database.Migrate();
-}
+using var scope = app.Services.CreateScope();
+scope.ServiceProvider.Migrate();
 
 app.Services.GetRequiredService<ITelegramNotifier>();
 

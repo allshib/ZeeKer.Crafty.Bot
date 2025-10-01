@@ -1,12 +1,8 @@
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading;
-using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using ZeeKer.Crafty.Infrastructure.Persistence.Entities;
 using ZeeKer.Crafty.Messaging;
+using ZeeKer.Crafty.Storage.Entities;
 
-namespace ZeeKer.Crafty.Infrastructure.Persistence;
+namespace ZeeKer.Crafty.Storage.Repositories;
 
 public sealed class SqliteTelegramChatStateRepository(IDbContextFactory<TelegramBotDbContext> contextFactory)
     : ITelegramChatStateRepository

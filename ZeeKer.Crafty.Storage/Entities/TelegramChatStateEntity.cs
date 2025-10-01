@@ -1,4 +1,4 @@
-namespace ZeeKer.Crafty.Infrastructure.Persistence.Entities;
+namespace ZeeKer.Crafty.Storage.Entities;
 public sealed class TelegramChatStateEntity
 {
     public long ChatId { get; set; }
