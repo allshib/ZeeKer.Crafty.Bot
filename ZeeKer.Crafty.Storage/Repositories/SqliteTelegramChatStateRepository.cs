@@ -1,4 +1,6 @@
 using Microsoft.EntityFrameworkCore;
+using Mono.TextTemplating;
+using System.Threading;
 using ZeeKer.Crafty.Messaging;
 using ZeeKer.Crafty.Storage.Entities;
 
@@ -9,7 +11,7 @@ public sealed class SqliteTelegramChatStateRepository(IDbContextFactory<Telegram
 {
     private readonly IDbContextFactory<TelegramBotDbContext> _contextFactory = contextFactory;
 
-    public async Task<IReadOnlyCollection<TelegramChatState>> GetAllAsync(CancellationToken cancellationToken)
+    public async Task<IReadOnlyCollection<TelegramChatState>> GetAll(CancellationToken cancellationToken)
     {
         await using var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -20,7 +22,7 @@ public sealed class SqliteTelegramChatStateRepository(IDbContextFactory<Telegram
         return entities.Select(MapToDomain).ToArray();
     }
 
-    public async Task UpsertAsync(TelegramChatState state, CancellationToken cancellationToken)
+    public async Task Upsert(TelegramChatState state, CancellationToken cancellationToken)
     {
         await using var dbContext = await _contextFactory.CreateDbContextAsync(cancellationToken);
 
@@ -44,7 +46,23 @@ public sealed class SqliteTelegramChatStateRepository(IDbContextFactory<Telegram
 
         await dbContext.SaveChangesAsync(cancellationToken);
     }
+    public async Task Delete(long chatId, CancellationToken token)
+    {
+        await using var dbContext = await _contextFactory.CreateDbContextAsync(token);
+
+        var entity = await dbContext.TelegramChatStates
+            .FirstOrDefaultAsync(x => x.ChatId == chatId, token);
+
+        if (entity is null)
+            return;
+
+        dbContext.TelegramChatStates.Remove(entity);
+
+        await dbContext.SaveChangesAsync(token);
+    }
 
     private static TelegramChatState MapToDomain(TelegramChatStateEntity entity) =>
         new(entity.ChatId, entity.LastMessageId);
+
+    
 }

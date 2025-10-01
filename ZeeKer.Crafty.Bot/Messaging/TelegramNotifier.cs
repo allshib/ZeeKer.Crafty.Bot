@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
+using Telegram.Bot.Types;
 using ZeeKer.Crafty.Configuration;
 using ZeeKer.Crafty.Messaging;
 
@@ -33,7 +34,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
         var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
 
         var existingStates = chatStateRepository
-            .GetAllAsync(CancellationToken.None)
+            .GetAll(CancellationToken.None)
             .GetAwaiter()
             .GetResult();
 
@@ -42,15 +43,24 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
         this.client.StartReceiving(async (bot, update, ct) =>
         {
-            if (update.Message is { } message)
+            if (update.Message is { } message)                
+                await HandleMessage(message, chatStateRepository, ct);
+        },
+            (bot, exception, ct) =>
             {
-                if (message.Text != "/showstatistic")
-                    return;
+                logger.LogError(exception, "Ошибка");
+            });
+    }
 
+    private async Task HandleMessage(Message message, ITelegramChatStateRepository chatStateRepository,  CancellationToken ct)
+    {
+        switch (message.Text)
+        {
+            case "/showstatistic":
                 var chatId = message.Chat.Id;
                 if (_lastMessages.TryAdd(chatId, 0))
                 {
-                    await chatStateRepository.UpsertAsync(
+                    await chatStateRepository.Upsert(
                         new TelegramChatState(chatId, 0),
                         ct);
                 }
@@ -61,13 +71,21 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         cancellationToken: ct);
 
                 _lastMessages[chatId] = sent.MessageId;
-                await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), ct);
-            }
-        },
-            (bot, exception, ct) =>
-            {
-                logger.LogError(exception, "Ошибка");
-            });
+                await chatStateRepository.Upsert(new(chatId, sent.MessageId), ct);
+                break;
+            case "/dontshowstatistic":
+
+                _lastMessages.TryRemove(message.Chat.Id, out var val);
+
+                var msg = await this.client.SendTextMessageAsync(
+                        chatId: message.Chat.Id,
+                        text: "Вывод статистики Отключен",
+                        cancellationToken: ct);
+
+                await chatStateRepository.Delete(message.Chat.Id, ct);
+                break;
+        }
+        
     }
 
     public async Task SendMessageAsync(string message, CancellationToken cancellationToken = default)
@@ -93,7 +111,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                         cancellationToken: cancellationToken);
 
-                    await chatStateRepository.UpsertAsync(new(chatId, messageId), cancellationToken);
+                    await chatStateRepository.Upsert(new(chatId, messageId), cancellationToken);
                 }
                 else
                 {
@@ -106,7 +124,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
                     _lastMessages[chatId] = sent.MessageId;
 
-                    await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), cancellationToken);
+                    await chatStateRepository.Upsert(new(chatId, sent.MessageId), cancellationToken);
                 }
             }
             catch (Telegram.Bot.Exceptions.ApiRequestException ex) when (ex.ErrorCode == 400 || ex.ErrorCode == 404)
@@ -120,7 +138,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
 
                 _lastMessages[chatId] = sent.MessageId;
 
-                await chatStateRepository.UpsertAsync(new(chatId, sent.MessageId), cancellationToken);
+                await chatStateRepository.Upsert(new(chatId, sent.MessageId), cancellationToken);
             }
             catch (Exception ex)
             {
