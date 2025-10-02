@@ -17,7 +17,7 @@ public static class DI
         });
 
         services.AddSingleton<ITelegramNotifier, TelegramNotifier>();
-        services.AddSingleton<ServerStatisticsMessageBuilder>();
+        services.AddSingleton<ServerMessageBuilder>();
         services.AddHostedService<CraftyStatusBroadcastService>();
 
 

@@ -8,29 +8,29 @@ namespace ZeeKer.Crafty.Bot.Services;
 
 public sealed class CraftyStatusBroadcastService : BackgroundService
 {
-    private readonly ICraftyControllerClient _craftyControllerClient;
-    private readonly ITelegramNotifier _telegramNotifier;
-    private readonly TelegramBotOptions _options;
-    private readonly ILogger<CraftyStatusBroadcastService> _logger;
-    private readonly ServerStatisticsMessageBuilder _messageBuilder;
+    private readonly ICraftyControllerClient craftyControllerClient;
+    private readonly ITelegramNotifier telegramNotifier;
+    private readonly TelegramBotOptions options;
+    private readonly ILogger<CraftyStatusBroadcastService> logger;
+    private readonly ServerMessageBuilder messageBuilder;
 
     public CraftyStatusBroadcastService(
         ICraftyControllerClient craftyControllerClient,
         ITelegramNotifier telegramNotifier,
         IOptions<TelegramBotOptions> options,
         ILogger<CraftyStatusBroadcastService> logger,
-        ServerStatisticsMessageBuilder messageBuilder)
+        ServerMessageBuilder messageBuilder)
     {
-        _craftyControllerClient = craftyControllerClient;
-        _telegramNotifier = telegramNotifier;
-        _options = options.Value;
-        _logger = logger;
-        _messageBuilder = messageBuilder;
+        this.craftyControllerClient = craftyControllerClient;
+        this.telegramNotifier = telegramNotifier;
+        this.options = options.Value;
+        this.logger = logger;
+        this.messageBuilder = messageBuilder;
     }
 
     protected override async Task ExecuteAsync(CancellationToken stoppingToken)
     {
-        var intervalMinutes = Math.Max(1, _options.UpdateIntervalMinutes);
+        var intervalMinutes = Math.Max(1, options.UpdateIntervalMinutes);
         var interval = TimeSpan.FromMinutes(intervalMinutes);
 
         using var timer = new PeriodicTimer(interval);
@@ -54,11 +54,11 @@ public sealed class CraftyStatusBroadcastService : BackgroundService
     {
         try
         {
-            var statistics = await _craftyControllerClient.GetServerStatisticsAsync(cancellationToken);
+            var statistics = await craftyControllerClient.GetServerStatisticsAsync(cancellationToken);
 
-            var message = _messageBuilder.Build(statistics);
+            var message = messageBuilder.Build(statistics);
 
-            await _telegramNotifier.SendMessageAsync(message, cancellationToken);
+            await telegramNotifier.UpdateStaticMessage(message, cancellationToken);
         }
         catch (OperationCanceledException) when (cancellationToken.IsCancellationRequested)
         {
@@ -66,15 +66,15 @@ public sealed class CraftyStatusBroadcastService : BackgroundService
         }
         catch (HttpRequestException ex)
         {
-            _logger.LogError(ex, "Failed to retrieve Crafty server statistics.");
+            logger.LogError(ex, "Failed to retrieve Crafty server statistics.");
         }
         catch (ApiRequestException ex)
         {
-            _logger.LogError(ex, "Failed to send Crafty status update to Telegram.");
+            logger.LogError(ex, "Failed to send Crafty status update to Telegram.");
         }
         catch (Exception ex)
         {
-            _logger.LogError(ex, "Unexpected error during Crafty status broadcast.");
+            logger.LogError(ex, "Unexpected error during Crafty status broadcast.");
         }
     }
 }

@@ -5,7 +5,7 @@ using ZeeKer.Crafty.Abstractions.Models;
 
 namespace ZeeKer.Crafty.Bot.Messaging;
 
-public sealed class ServerStatisticsMessageBuilder
+public sealed class ServerMessageBuilder
 {
     private static readonly string[] FlagLabels =
     [
@@ -15,6 +15,53 @@ public sealed class ServerStatisticsMessageBuilder
         "Crashed",
         "Downloading"
     ];
+    public enum ServerEventType
+    {
+        Started,
+        Stopped,
+        Crashed,
+        Killed,
+        Unknown
+    }
+    public string BuildServerEventMessage(string serverName, ServerEventType eventType)
+    {
+        string emoji;
+        string text;
+
+        switch (eventType)
+        {
+            case ServerEventType.Started:
+                emoji = "🟢";
+                text = $"Сервер *{serverName}* был успешно запущен.";
+                break;
+
+            case ServerEventType.Stopped:
+                emoji = "🛑";
+                text = $"Сервер *{serverName}* был остановлен.";
+                break;
+
+            case ServerEventType.Crashed:
+                emoji = "💥";
+                text = $"Сервер *{serverName}* вышел из строя!";
+                break;
+
+            case ServerEventType.Killed:
+                emoji = "⚡";
+                text = $"Сервер *{serverName}* был принудительно остановлен.";
+                break;
+
+            default:
+                emoji = "ℹ️";
+                text = $"Получено событие для сервера *{serverName}*.";
+                break;
+        }
+
+        var moscowZone = TimeZoneInfo.FindSystemTimeZoneById(
+            OperatingSystem.IsWindows() ? "Russian Standard Time" : "Europe/Moscow");
+        var moscowTime = TimeZoneInfo.ConvertTime(DateTimeOffset.UtcNow, moscowZone);
+
+        return $"{emoji} {text}\n🕒 {moscowTime:dd.MM.yyyy HH:mm:ss}";
+    }
 
     public string Build(IEnumerable<ServerStatisticsDto> statistics)
     {

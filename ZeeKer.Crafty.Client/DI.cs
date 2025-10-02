@@ -1,6 +1,4 @@
-﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.DependencyInjection;
-using Microsoft.Extensions.Options;
+﻿using Microsoft.Extensions.DependencyInjection;
 using System.Net.Http.Headers;
 using ZeeKer.Crafty.Abstractions.Configuration;
 using ZeeKer.Crafty.Abstractions.Services;

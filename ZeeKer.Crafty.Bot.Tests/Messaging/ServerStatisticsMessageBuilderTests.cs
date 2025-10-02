@@ -43,7 +43,7 @@ public sealed class ServerStatisticsMessageBuilderTests
                 flags: (updating: true, waitingStart: false, firstRun: false, crashed: false, downloading: false))
         };
 
-        var builder = new ServerStatisticsMessageBuilder();
+        var builder = new ServerMessageBuilder();
 
         // Act
         var result = builder.Build(statistics);
@@ -79,7 +79,7 @@ Total players online: 15
     [Fact]
     public void Build_WhenStatisticsEmpty_ShouldReturnPlaceholder()
     {
-        var builder = new ServerStatisticsMessageBuilder();
+        var builder = new ServerMessageBuilder();
 
         var result = builder.Build([]);
 

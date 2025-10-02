@@ -2,5 +2,19 @@ namespace ZeeKer.Crafty.Bot.Messaging;
 
 public interface ITelegramNotifier
 {
-    Task SendMessageAsync(string message, CancellationToken cancellationToken = default);
+    /// <summary>
+    /// Обновляет статичное сообщение во всех чатах.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task UpdateStaticMessage(string message, CancellationToken cancellationToken = default);
+
+    /// <summary>
+    /// Отправляет сообщение во все чаты.
+    /// </summary>
+    /// <param name="message"></param>
+    /// <param name="cancellationToken"></param>
+    /// <returns></returns>
+    Task SendMessage(string message, CancellationToken cancellationToken = default);
 }

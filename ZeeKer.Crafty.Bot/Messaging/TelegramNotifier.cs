@@ -1,6 +1,4 @@
 using System.Collections.Concurrent;
-using System.Linq;
-using System.Threading;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -88,7 +86,7 @@ public sealed class TelegramNotifier : ITelegramNotifier
         
     }
 
-    public async Task SendMessageAsync(string message, CancellationToken cancellationToken = default)
+    public async Task UpdateStaticMessage(string message, CancellationToken cancellationToken = default)
     {
         using var scope = serviceScopeFactory.CreateScope();
         var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
@@ -143,6 +141,29 @@ public sealed class TelegramNotifier : ITelegramNotifier
             catch (Exception ex)
             {
                 logger.LogError(ex, "Ошибка при отправке/редактировании сообщения");
+            }
+        }
+    }
+
+    public async Task SendMessage(string message, CancellationToken cancellationToken = default)
+    {
+        using var scope = serviceScopeFactory.CreateScope();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+
+        foreach (var chatId in _lastMessages.Keys)
+        {
+            try
+            {
+                var sent = await client.SendTextMessageAsync(
+                    chatId: chatId,
+                    text: message,
+                    parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
+                    cancellationToken: cancellationToken);
+                
+            }
+            catch (Exception ex)
+            {
+                logger.LogError(ex, "Ошибка при отправке сообщения");
             }
         }
     }

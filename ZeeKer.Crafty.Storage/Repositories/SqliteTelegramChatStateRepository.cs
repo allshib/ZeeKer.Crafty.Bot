@@ -1,6 +1,4 @@
 using Microsoft.EntityFrameworkCore;
-using Mono.TextTemplating;
-using System.Threading;
 using ZeeKer.Crafty.Messaging;
 using ZeeKer.Crafty.Storage.Entities;
 
