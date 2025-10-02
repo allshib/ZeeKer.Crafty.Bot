@@ -9,18 +9,15 @@ namespace ZeeKer.Crafty.Bot.Messaging;
 public sealed class TelegramNotifier : ITelegramNotifier
 {
     private readonly ITelegramBotClient client;
-    private readonly TelegramBotOptions options;
     private readonly ILogger<TelegramNotifier> logger;
     private readonly IServiceScopeFactory serviceScopeFactory;
 
     public TelegramNotifier(
         ITelegramBotClient client,
-        IOptions<TelegramBotOptions> options,
         ILogger<TelegramNotifier> logger,
         IServiceScopeFactory serviceScopeFactory)
     {
         this.client = client;
-        this.options = options.Value;
         this.logger = logger;
         this.serviceScopeFactory = serviceScopeFactory;
 
