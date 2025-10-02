@@ -1,4 +1,3 @@
-using System.Collections.Concurrent;
 using Microsoft.Extensions.Options;
 using Telegram.Bot;
 using Telegram.Bot.Types;
@@ -14,9 +13,6 @@ public sealed class TelegramNotifier : ITelegramNotifier
     private readonly ILogger<TelegramNotifier> logger;
     private readonly IServiceScopeFactory serviceScopeFactory;
 
-    // chatId -> last messageId
-    private readonly ConcurrentDictionary<long, int> _lastMessages;
-
     public TelegramNotifier(
         ITelegramBotClient client,
         IOptions<TelegramBotOptions> options,
@@ -28,21 +24,11 @@ public sealed class TelegramNotifier : ITelegramNotifier
         this.logger = logger;
         this.serviceScopeFactory = serviceScopeFactory;
 
-        using var scope = serviceScopeFactory.CreateScope();
-        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
-
-        var existingStates = chatStateRepository
-            .GetAll(CancellationToken.None)
-            .GetAwaiter()
-            .GetResult();
-
-        _lastMessages = new ConcurrentDictionary<long, int>(
-            existingStates.ToDictionary(state => state.ChatId, state => state.LastMessageId));
 
         this.client.StartReceiving(async (bot, update, ct) =>
         {
             if (update.Message is { } message)                
-                await HandleMessage(message, chatStateRepository, ct);
+                await HandleMessage(message, ct);
         },
             (bot, exception, ct) =>
             {
@@ -50,51 +36,59 @@ public sealed class TelegramNotifier : ITelegramNotifier
             });
     }
 
-    private async Task HandleMessage(Message message, ITelegramChatStateRepository chatStateRepository,  CancellationToken ct)
+    private async Task HandleMessage(Message message,  CancellationToken ct)
     {
         switch (message.Text)
         {
             case "/showstatistic":
+
                 var chatId = message.Chat.Id;
-                if (_lastMessages.TryAdd(chatId, 0))
-                {
-                    await chatStateRepository.Upsert(
-                        new TelegramChatState(chatId, 0),
-                        ct);
-                }
 
                 var sent = await this.client.SendTextMessageAsync(
                         chatId: chatId,
                         text: "Вывод статистики активирован",
                         cancellationToken: ct);
 
-                _lastMessages[chatId] = sent.MessageId;
-                await chatStateRepository.Upsert(new(chatId, sent.MessageId), ct);
+                await Upsert(new(chatId, sent.MessageId), ct);
                 break;
             case "/dontshowstatistic":
-
-                _lastMessages.TryRemove(message.Chat.Id, out var val);
 
                 var msg = await this.client.SendTextMessageAsync(
                         chatId: message.Chat.Id,
                         text: "Вывод статистики Отключен",
                         cancellationToken: ct);
 
-                await chatStateRepository.Delete(message.Chat.Id, ct);
+                await Delete(message.Chat.Id, ct);
                 break;
         }
         
     }
 
-    public async Task UpdateStaticMessage(string message, CancellationToken cancellationToken = default)
+    private async Task Upsert(TelegramChatState state, CancellationToken token)
     {
         using var scope = serviceScopeFactory.CreateScope();
         var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+        await chatStateRepository.Upsert(state, token);
+    }
 
-        foreach (var kvp in _lastMessages.ToArray())
+    private async Task Delete(long chatId, CancellationToken token)
+    {
+        using var scope = serviceScopeFactory.CreateScope();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+        await chatStateRepository.Delete(chatId, token);
+    }
+
+    public async Task UpdateStaticMessage(string message, CancellationToken cancellationToken = default)
+   {
+        using var scope = serviceScopeFactory.CreateScope();
+        var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+
+        var states = await chatStateRepository.GetAll(cancellationToken);
+
+        foreach (var state in states)
         {
-            var chatId = kvp.Key;
-            var messageId = kvp.Value;
+            var chatId = state.ChatId;
+            var messageId = state.LastMessageId;
 
             try
             {
@@ -120,7 +114,6 @@ public sealed class TelegramNotifier : ITelegramNotifier
                         parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                         cancellationToken: cancellationToken);
 
-                    _lastMessages[chatId] = sent.MessageId;
 
                     await chatStateRepository.Upsert(new(chatId, sent.MessageId), cancellationToken);
                 }
@@ -133,8 +126,6 @@ public sealed class TelegramNotifier : ITelegramNotifier
                     text: message,
                     parseMode: Telegram.Bot.Types.Enums.ParseMode.Markdown,
                     cancellationToken: cancellationToken);
-
-                _lastMessages[chatId] = sent.MessageId;
 
                 await chatStateRepository.Upsert(new(chatId, sent.MessageId), cancellationToken);
             }
@@ -149,8 +140,9 @@ public sealed class TelegramNotifier : ITelegramNotifier
     {
         using var scope = serviceScopeFactory.CreateScope();
         var chatStateRepository = scope.ServiceProvider.GetRequiredService<ITelegramChatStateRepository>();
+        var states = await chatStateRepository.GetAll(cancellationToken);
 
-        foreach (var chatId in _lastMessages.Keys)
+        foreach (var chatId in states.Select(x=>x.ChatId))
         {
             try
             {
